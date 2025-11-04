@@ -36,7 +36,7 @@ export default function VideosPage() {
       id: 5,
       url: 'https://www.youtube.com/watch?v=0t1Pm2HHcQo&list=RD0G383538qzQ&index=6',
       title: 'Video 5',
-      category: 'Musica'
+      category: 'Black Pumas'
     },
     {
       id: 6,
