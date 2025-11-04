@@ -4,70 +4,77 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
+// ✅ Definimos tipos para los datos
+interface Video {
+  id: number;
+  url: string;
+  title: string;
+  category: string;
+}
+
 export default function VideosPage() {
-  const [selectedVideo, setSelectedVideo] = useState<any>(null);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
 
-  const videos = [
+  const videos: Video[] = [
     {
       id: 1,
       url: 'https://www.youtube.com/watch?v=an3AkQL62F8&list=RDan3AkQL62F8&start_radio=1',
       title: 'Video 1',
-      category: 'Black Pumas'
+      category: 'Black Pumas',
     },
     {
       id: 2,
       url: 'https://www.youtube.com/watch?v=0G383538qzQ&list=RD0G383538qzQ&start_radio=1',
       title: 'Video 2',
-      category: 'Black Pumas'
+      category: 'Black Pumas',
     },
     {
       id: 3,
       url: 'https://www.youtube.com/watch?v=QkF3oxziUI4&list=RD0G383538qzQ&index=4',
       title: 'Video 3',
-      category: 'Led Zepelin'
+      category: 'Led Zepelin',
     },
     {
       id: 4,
       url: 'https://www.youtube.com/watch?v=0t1Pm2HHcQo&list=RD0G383538qzQ&index=5',
       title: 'Video 4',
-      category: 'Black Pumas'
+      category: 'Black Pumas',
     },
     {
       id: 5,
       url: 'https://www.youtube.com/watch?v=0t1Pm2HHcQo&list=RD0G383538qzQ&index=6',
       title: 'Video 5',
-      category: 'Black Pumas'
+      category: 'Black Pumas',
     },
     {
       id: 6,
       url: 'https://www.youtube.com/watch?v=09839DpTctU&list=RD0G383538qzQ&index=6',
       title: 'Video 6',
-      category: 'Eagles'
+      category: 'Eagles',
     },
   ];
 
-  // ✅ Corregido: se tipa el parámetro url
   const extractVideoId = (url: string): string | null => {
-    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+    const match = url.match(
+      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+    );
     return match ? match[1] : null;
   };
 
-  const categories = ['Todas', ...new Set(videos.map(v => v.category))];
-  
+  const categories = ['Todas', ...new Set(videos.map((v) => v.category))];
+
   const filteredVideos =
     selectedCategory === 'Todas'
       ? videos
-      : videos.filter(video => video.category === selectedCategory);
+      : videos.filter((video) => video.category === selectedCategory);
 
   return (
     <div className="page-container">
       <header className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <h1 className="section-title mb-0">
-              Videos RenderSoft
-            </h1>
+            <h1 className="section-title mb-0">Videos RenderSoft</h1>
             <Link href="/" className="btn-primary">
               &larr; Volver
             </Link>
@@ -112,16 +119,15 @@ export default function VideosPage() {
 
         {filteredVideos.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No hay videos en esta categoría</p>
+            <p className="text-gray-500 text-lg">
+              No hay videos en esta categoría
+            </p>
           </div>
         )}
       </main>
 
       {selectedVideo && (
-        <VideoModal
-          video={selectedVideo}
-          onClose={() => setSelectedVideo(null)}
-        />
+        <VideoModal video={selectedVideo} onClose={() => setSelectedVideo(null)} />
       )}
     </div>
   );
@@ -132,7 +138,7 @@ function VideoCard({
   videoId,
   onClick,
 }: {
-  video: any;
+  video: Video;
   videoId: string | null;
   onClick: () => void;
 }) {
@@ -192,7 +198,7 @@ function VideoModal({
   video,
   onClose,
 }: {
-  video: any;
+  video: Video;
   onClose: () => void;
 }) {
   const videoId =
