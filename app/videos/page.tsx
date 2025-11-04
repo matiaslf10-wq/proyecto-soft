@@ -5,8 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function VideosPage() {
-  const [selectedVideo, setSelectedVideo] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('Todas');
+  const [selectedVideo, setSelectedVideo] = useState<any>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
 
   const videos = [
     {
@@ -47,16 +47,18 @@ export default function VideosPage() {
     },
   ];
 
-  const extractVideoId = (url) => {
+  // ✅ Corregido: se tipa el parámetro url
+  const extractVideoId = (url: string): string | null => {
     const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
     return match ? match[1] : null;
   };
 
   const categories = ['Todas', ...new Set(videos.map(v => v.category))];
   
-  const filteredVideos = selectedCategory === 'Todas' 
-    ? videos 
-    : videos.filter(video => video.category === selectedCategory);
+  const filteredVideos =
+    selectedCategory === 'Todas'
+      ? videos
+      : videos.filter(video => video.category === selectedCategory);
 
   return (
     <div className="page-container">
@@ -125,7 +127,15 @@ export default function VideosPage() {
   );
 }
 
-function VideoCard({ video, videoId, onClick }) {
+function VideoCard({
+  video,
+  videoId,
+  onClick,
+}: {
+  video: any;
+  videoId: string | null;
+  onClick: () => void;
+}) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -147,7 +157,11 @@ function VideoCard({ video, videoId, onClick }) {
             />
             <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
               <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity">
-                <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-6 h-6 text-white ml-1"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </div>
@@ -174,12 +188,27 @@ function VideoCard({ video, videoId, onClick }) {
   );
 }
 
-function VideoModal({ video, onClose }) {
-  const videoId = video.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
+function VideoModal({
+  video,
+  onClose,
+}: {
+  video: any;
+  onClose: () => void;
+}) {
+  const videoId =
+    video.url.match(
+      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+    )?.[1];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="card max-w-5xl w-full relative" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="card max-w-5xl w-full relative"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-3xl font-bold z-10 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
@@ -204,7 +233,12 @@ function VideoModal({ video, onClose }) {
             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
               {video.category}
             </span>
-            <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-2 transition-colors">
+            <a
+              href={video.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-2 transition-colors"
+            >
               Ver en YouTube &rarr;
             </a>
           </div>
@@ -213,4 +247,3 @@ function VideoModal({ video, onClose }) {
     </div>
   );
 }
-
