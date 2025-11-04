@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <main className="page-container flex flex-col items-center justify-center p-4">
@@ -11,37 +13,23 @@ export default function Home() {
         </p>
 
         <div className="space-y-4">
-          <a
-            href="/videos"
-            className="btn-primary block w-full text-center"
-          >
+          <Link href="/videos" className="btn-primary block w-full text-center">
             Videos
-          </a>
+          </Link>
 
-          <a
-            href="/proyectos"
-            className="btn-primary block w-full text-center"
-          >
+          <Link href="/proyectos" className="btn-primary block w-full text-center">
             Proyectos
-          </a>
+          </Link>
 
-          <a
-            href="https://www.microsoft.com/es-es/download/details.aspx?id=58494"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary block w-full text-center"
-          >
+          <a href="https://www.microsoft.com/es-es/download/details.aspx?id=58494" target="_blank" rel="noopener noreferrer" className="btn-primary block w-full text-center">
             Descarga Power BI
           </a>
         </div>
 
         <div className="mt-10 text-center">
-          <a 
-            href="/contacto"
-            className="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-300 underline"
-          >
+          <Link href="/contacto" className="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-300 underline">
             Contáctenos
-          </a>
+          </Link>
         </div>
       </div>
     </main>

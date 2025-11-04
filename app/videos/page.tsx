@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function VideosPage() {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('Todas');
 
-  // Array de videos - Aquí agregas tus URLs de YouTube
   const videos = [
     {
       id: 1,
@@ -53,37 +54,30 @@ export default function VideosPage() {
 
   const categories = ['Todas', ...new Set(videos.map(v => v.category))];
   
-  // Filtrar videos por categoría seleccionada
   const filteredVideos = selectedCategory === 'Todas' 
     ? videos 
     : videos.filter(video => video.category === selectedCategory);
 
   return (
     <div className="page-container">
-      {/* Header */}
       <header className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <h1 className="section-title mb-0">
               Videos RenderSoft
             </h1>
-            <a
-              href="/"
-              className="btn-primary"
-            >
+            <Link href="/" className="btn-primary">
               &larr; Volver
-            </a>
+            </Link>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <p className="text-muted text-center mb-8 text-lg">
           Explora nuestra biblioteca completa de tutoriales y proyectos
         </p>
 
-        {/* Categorías */}
         <div className="flex flex-wrap justify-center gap-3 mb-8">
           {categories.map((category) => (
             <button
@@ -100,7 +94,6 @@ export default function VideosPage() {
           ))}
         </div>
 
-        {/* Grid de Videos */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredVideos.map((video) => {
             const videoId = extractVideoId(video.url);
@@ -115,7 +108,6 @@ export default function VideosPage() {
           })}
         </div>
 
-        {/* Mensaje si no hay videos */}
         {filteredVideos.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No hay videos en esta categoría</p>
@@ -123,7 +115,6 @@ export default function VideosPage() {
         )}
       </main>
 
-      {/* Modal de Video */}
       {selectedVideo && (
         <VideoModal
           video={selectedVideo}
@@ -147,18 +138,16 @@ function VideoCard({ video, videoId, onClick }) {
       <div className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden">
         {!isHovered ? (
           <>
-            <img
+            <Image
               src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
               alt={video.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              unoptimized
             />
             <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
               <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity">
-                <svg
-                  className="w-6 h-6 text-white ml-1"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </div>
@@ -189,15 +178,8 @@ function VideoModal({ video, onClose }) {
   const videoId = video.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="card max-w-5xl w-full relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Botón cerrar */}
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="card max-w-5xl w-full relative" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-3xl font-bold z-10 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
@@ -205,7 +187,6 @@ function VideoModal({ video, onClose }) {
           ✕
         </button>
 
-        {/* Video Player */}
         <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-4">
           <iframe
             src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
@@ -215,7 +196,6 @@ function VideoModal({ video, onClose }) {
           />
         </div>
 
-        {/* Info del video */}
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             {video.title}
@@ -224,13 +204,8 @@ function VideoModal({ video, onClose }) {
             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
               {video.category}
             </span>
-            <a
-              href={video.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-2 transition-colors"
-            >
-              Ver en YouTube →
+            <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-2 transition-colors">
+              Ver en YouTube &rarr;
             </a>
           </div>
         </div>
@@ -238,3 +213,4 @@ function VideoModal({ video, onClose }) {
     </div>
   );
 }
+

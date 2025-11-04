@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, ChangeEvent, FormEvent } from 'react';
+import Link from 'next/link';
 
 interface FormData {
   nombre: string;
@@ -130,12 +131,12 @@ export default function Contacto() {
 
         {/* Link para volver */}
         <div className="mt-8 text-center">
-          <a 
+          <Link 
             href="/"
             className="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-300"
           >
             ← Volver al inicio
-          </a>
+          </Link>
         </div>
       </div>
     </main>
