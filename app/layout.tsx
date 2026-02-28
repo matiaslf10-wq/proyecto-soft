@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'RenderSoft',
-  description: 'Plataforma de servicios y proyectos',
+  title: 'RenderSmart',
+  description: 'Software gastronomico',
 };
 
 export default function RootLayout({
