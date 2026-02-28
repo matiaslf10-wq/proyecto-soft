@@ -147,52 +147,55 @@ export default function RestoSmartLanding() {
   return (
     <main className="min-h-screen bg-white text-zinc-900">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
-          <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-2xl overflow-hidden border border-black/10 bg-white">
+ <header className="sticky top-0 z-40 border-b border-black/5 bg-white/80 backdrop-blur">
+  <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
+    
+    <div className="flex items-center gap-3">
+      <div className="relative h-16 w-16">
   <Image
     src="/logo-smart.png"
     alt="RestoSmart"
-    width={36}
-    height={36}
-    className="h-full w-full object-contain"
+    fill
+    className="object-contain"
     priority
   />
 </div>
-            <span className="font-semibold">RestoSmart</span>
-          </div>
+      <span className="font-semibold text-lg leading-none">
+        RestoSmart
+      </span>
+    </div>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm text-zinc-700">
-            <a href="#funciones" className="hover:text-zinc-900">
-              Funciones
-            </a>
-            <a href="#precios" className="hover:text-zinc-900">
-              Precios
-            </a>
-            <a href="#pasos" className="hover:text-zinc-900">
-              Cómo funciona
-            </a>
-            <a href="#faq" className="hover:text-zinc-900">
-              FAQ
-            </a>
+    <nav className="hidden md:flex items-center gap-6 text-sm text-zinc-700">
+      <a href="#funciones" className="hover:text-zinc-900">
+        Funciones
+      </a>
+      <a href="#precios" className="hover:text-zinc-900">
+        Precios
+      </a>
+      <a href="#pasos" className="hover:text-zinc-900">
+        Cómo funciona
+      </a>
+      <a href="#faq" className="hover:text-zinc-900">
+        FAQ
+      </a>
 
-            <Link
-  href="/demo"
-  className="rounded-full bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
->
-  Probar demo
-</Link>
-          </nav>
+      <Link
+        href="/demo"
+        className="rounded-full bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+      >
+        Probar demo
+      </Link>
+    </nav>
 
-          <a
-            href="#contacto"
-            className="md:hidden rounded-full bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
-          >
-            Pedir demo
-          </a>
-        </div>
-      </header>
+    <a
+      href="#contacto"
+      className="md:hidden rounded-full bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+    >
+      Probar demo
+    </a>
+
+  </div>
+</header>
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-5 py-14 md:py-20">
@@ -204,8 +207,8 @@ export default function RestoSmartLanding() {
               <span className="font-semibold">Software inteligente</span> para restaurantes, bares,
               cafés y take away.
               <br />
-              <span className="font-semibold">Transformá tu negocio gastronómico</span> en un
-              negocio inteligente.
+              Transformá tu negocio gastronómico <span className="font-semibold"> en un
+              negocio inteligente.</span>
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">
@@ -250,18 +253,18 @@ export default function RestoSmartLanding() {
             {[
               {
                 title: 'Esencial',
-                desc: 'Menú QR, categorías, productos, precios y disponibilidad en tiempo real.',
-                bullets: ['Menú digital', 'QR por mesa', 'Edición rápida'],
+                desc: 'Digitalizá tu negocio.',
+                bullets: ['Menú digital', 'QR por mesa', 'Gestion esencial', 'Metricas esenciales'],
               },
               {
                 title: 'Pro',
-                desc: 'Gestión operativa: pedidos, estados, cocina/mozo y control del flujo.',
-                bullets: ['Pedidos por mesa', 'Estados de pedido', 'Menos errores'],
+                desc: 'Controlá tu negocio.',
+                bullets: ['Control de stock', 'Reportes avanzados', 'Dashboard completo', 'Comparativa de datos'],
               },
               {
                 title: 'Intelligence',
-                desc: 'Análisis de datos para optimizar ventas, productos y horarios.',
-                bullets: ['KPIs', 'Productos top', 'Recomendaciones'],
+                desc: 'Optimizá tu negocio',
+                bullets: ['KPIs', 'Mapas de calor', 'Analisis inteligente', 'Insights automáticos'],
               },
             ].map((c) => (
               <div
@@ -310,7 +313,7 @@ export default function RestoSmartLanding() {
                 <li>✔ Menú digital QR</li>
                 <li>✔ Edición de productos</li>
                 <li>✔ QR por mesa</li>
-                <li>✔ Soporte básico</li>
+                <li>✔ Metricas esenciales</li>
               </ul>
 
             </div>
@@ -327,9 +330,9 @@ export default function RestoSmartLanding() {
               </div>
               <ul className="mt-6 grid gap-2 text-sm text-zinc-700">
                 <li>✔ Todo lo del plan Esencial</li>
-                <li>✔ Gestión de pedidos</li>
-                <li>✔ Panel para cocina/mozo</li>
-                <li>✔ Mayor control operativo</li>
+                <li>✔ Gestión de stock</li>
+                <li>✔ Reportes de ventas</li>
+                <li>✔ Rendimiento por producto</li>
               </ul>
 
             </div>
@@ -342,7 +345,7 @@ export default function RestoSmartLanding() {
               </div>
               <ul className="mt-6 grid gap-2 text-sm text-zinc-700">
                 <li>✔ Todo lo del plan Pro</li>
-                <li>✔ Dashboard de ventas</li>
+                <li>✔ Dashboard completo</li>
                 <li>✔ Productos más vendidos</li>
                 <li>✔ Análisis y optimización</li>
               </ul>
