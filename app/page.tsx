@@ -593,33 +593,6 @@ export default function RestoSmartLanding() {
                 ) : null}
               </div>
             </form>
-
-            <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
-              <div className="text-sm font-semibold">¿Cómo es la demo?</div>
-              <p className="mt-2 text-sm text-zinc-700 leading-relaxed">
-                Coordinamos una demo personalizada por email. Si ya tenés el software montado,
-                podemos mostrar:
-              </p>
-
-              <ul className="mt-4 grid gap-2 text-sm text-zinc-700">
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
-                  Menú QR en un celular
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
-                  Flujo de pedidos (salón/cocina)
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
-                  Dashboard (si aplica al plan)
-                </li>
-              </ul>
-
-              <div className="mt-6 rounded-2xl border border-black/10 bg-zinc-50 p-4 text-sm text-zinc-700">
-                Tip: si querés, armamos una demo “segura” con datos ficticios y acceso temporal.
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -627,7 +600,7 @@ export default function RestoSmartLanding() {
       {/* CTA Final */}
       <section className="border-t border-black/5 bg-blue-600">
         <div className="mx-auto max-w-6xl px-5 py-14 text-center text-white">
-          <h2 className="text-3xl font-bold">¿Listo para transformar tu restaurante?</h2>
+          <h2 className="text-3xl font-bold">¿Listo para transformar tu negocio gastronomico?</h2>
           <p className="mt-4 text-blue-100 max-w-2xl mx-auto">
             Implementá RestoSmart en pocos días y empezá a operar con datos, eficiencia y control.
           </p>
