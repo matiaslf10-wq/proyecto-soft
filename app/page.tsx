@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function PhoneMockup() {
   // Mockup sin imágenes externas: teléfono + QR + mini menú
@@ -149,9 +150,16 @@ export default function RestoSmartLanding() {
       <header className="sticky top-0 z-40 border-b border-black/5 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
           <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-2xl bg-blue-600 text-white grid place-items-center font-bold">
-              R
-            </div>
+            <div className="h-9 w-9 rounded-2xl overflow-hidden border border-black/10 bg-white">
+  <Image
+    src="/logo-smart.png"
+    alt="RestoSmart"
+    width={36}
+    height={36}
+    className="h-full w-full object-contain"
+    priority
+  />
+</div>
             <span className="font-semibold">RestoSmart</span>
           </div>
 

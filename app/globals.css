@@ -5,17 +5,27 @@
   --color-primary: #3b82f6;
   --color-primary-dark: #2563eb;
   --color-primary-light: #60a5fa;
-  
+
   --color-secondary: #6b7280;
   --color-secondary-dark: #4b5563;
   --color-secondary-light: #9ca3af;
-  
+
   --color-white: #ffffff;
   --color-background: #f9fafb;
+
+  /* ✅ Tipografías (se cargan desde layout.tsx con next/font) */
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-manrope);
 }
 
 body {
   color: var(--color-secondary-dark);
+  font-family: var(--font-sans), sans-serif; /* ✅ Inter para texto general */
+}
+
+/* ✅ Títulos con Manrope */
+h1, h2, h3 {
+  font-family: var(--font-display), sans-serif;
 }
 
 /* Utilidades personalizadas */
@@ -38,6 +48,8 @@ body {
 
   .section-title {
     @apply text-3xl md:text-4xl font-bold text-gray-800 mb-6;
+    font-family: var(--font-display), sans-serif; /* ✅ asegura Manrope acá también */
+    letter-spacing: -0.02em; /* ✅ look más “Stripe” */
   }
 
   .text-muted {

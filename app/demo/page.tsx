@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 type Categoria = {
   id: string;
@@ -32,12 +33,15 @@ type Pedido = {
   mesa: string;
   creado_en: string; // ISO
   estado: EstadoPedido;
+  entregado: boolean; // ✅ para pantalla mozo
   items: Array<{
     productoId: string;
     cantidad: number;
     nota?: string;
   }>;
 };
+
+type Vista = 'cliente' | 'cocina' | 'mozo';
 
 function moneyARS(n: number) {
   return `$ ${n.toLocaleString('es-AR')}`;
@@ -153,9 +157,20 @@ const DEMO = {
   ] satisfies Producto[],
 };
 
-type Vista = 'cliente' | 'operacion';
+function normalizeMesa(x: string | null | undefined) {
+  const v = String(x ?? '').trim();
+  return v.length ? v : '12';
+}
+
+function normalizeVista(x: string | null | undefined): Vista {
+  if (x === 'cliente' || x === 'cocina' || x === 'mozo') return x;
+  return 'cliente';
+}
 
 export default function DemoPage() {
+  const router = useRouter();
+  const sp = useSearchParams();
+
   const [vista, setVista] = useState<Vista>('cliente');
   const [mesa, setMesa] = useState('12');
 
@@ -164,6 +179,10 @@ export default function DemoPage() {
   const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
   const [toast, setToast] = useState<string | null>(null);
 
+  // ✅ estado “mozo”
+  const [mesaEfectivo, setMesaEfectivo] = useState<Record<string, boolean>>({});
+  const [mesaPagada, setMesaPagada] = useState<Record<string, boolean>>({});
+
   const [pedidos, setPedidos] = useState<Pedido[]>(() => {
     return [
       {
@@ -171,6 +190,7 @@ export default function DemoPage() {
         mesa: '7',
         creado_en: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
         estado: 'en_preparacion',
+        entregado: false,
         items: [
           { productoId: 'p_flatwhite', cantidad: 1, nota: 'Sin azúcar' },
           { productoId: 'p_medialunas', cantidad: 1 },
@@ -181,10 +201,36 @@ export default function DemoPage() {
         mesa: '3',
         creado_en: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
         estado: 'pendiente',
+        entregado: false,
         items: [{ productoId: 'p_tostado', cantidad: 1, nota: 'Bien tostado' }],
+      },
+      {
+        id: uid('ped'),
+        mesa: '12',
+        creado_en: new Date(Date.now() - 6 * 60 * 1000).toISOString(),
+        estado: 'listo',
+        entregado: false,
+        items: [{ productoId: 'p_capuccino', cantidad: 2 }],
       },
     ];
   });
+
+  // ✅ 1) leer ?mesa= y ?vista= al entrar
+  useEffect(() => {
+    const mesaQ = normalizeMesa(sp.get('mesa'));
+    const vistaQ = normalizeVista(sp.get('vista'));
+    setMesa(mesaQ);
+    setVista(vistaQ);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // helper para actualizar query string sin recargar
+  function setQuery(next: { mesa?: string; vista?: Vista }) {
+    const params = new URLSearchParams(sp?.toString() || '');
+    if (next.mesa != null) params.set('mesa', String(next.mesa));
+    if (next.vista != null) params.set('vista', String(next.vista));
+    router.replace(`/demo?${params.toString()}`);
+  }
 
   const productosById = useMemo(() => {
     const map: Record<string, Producto> = {};
@@ -250,11 +296,14 @@ export default function DemoPage() {
       return;
     }
 
+    const mesaNorm = normalizeMesa(mesa);
+
     const nuevo: Pedido = {
       id: uid('ped'),
-      mesa: String(mesa || '—'),
+      mesa: mesaNorm,
       creado_en: nowIso(),
       estado: 'pendiente',
+      entregado: false,
       items: carrito.map((x) => ({
         productoId: x.productoId,
         cantidad: x.cantidad,
@@ -267,14 +316,23 @@ export default function DemoPage() {
     setToast('Pedido enviado (demo)');
     setTimeout(() => setToast(null), 1400);
 
-    setVista('operacion');
+    // demo: saltamos a cocina para ver el flujo
+    setVista('cocina');
+    setQuery({ mesa: mesaNorm, vista: 'cocina' });
   }
 
   function cambiarEstadoPedido(pedidoId: string, estado: EstadoPedido) {
     setPedidos((prev) => prev.map((p) => (p.id === pedidoId ? { ...p, estado } : p)));
   }
 
-  const statsOperacion = useMemo(() => {
+  function marcarEntregado(pedidoId: string) {
+    setPedidos((prev) => prev.map((p) => (p.id === pedidoId ? { ...p, entregado: true } : p)));
+    setToast('Marcado como entregado');
+    setTimeout(() => setToast(null), 1200);
+  }
+
+  // ✅ estadísticas cocina
+  const statsCocina = useMemo(() => {
     const pendientes = pedidos.filter((p) => p.estado === 'pendiente').length;
     const enPrep = pedidos.filter((p) => p.estado === 'en_preparacion').length;
     const listos = pedidos.filter((p) => p.estado === 'listo').length;
@@ -283,6 +341,7 @@ export default function DemoPage() {
 
   return (
     <main className="min-h-screen bg-white text-zinc-900">
+      {/* Topbar */}
       <header className="sticky top-0 z-40 border-b border-black/5 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
           <div className="flex items-center gap-3">
@@ -305,23 +364,42 @@ export default function DemoPage() {
             <div className="hidden sm:flex items-center gap-2 rounded-full border border-black/10 bg-white p-1">
               <button
                 type="button"
-                onClick={() => setVista('cliente')}
+                onClick={() => {
+                  setVista('cliente');
+                  setQuery({ mesa, vista: 'cliente' });
+                }}
                 className={classNames(
                   'px-3 py-2 text-xs font-semibold rounded-full',
                   vista === 'cliente' ? 'bg-blue-600 text-white' : 'text-zinc-700 hover:bg-zinc-50'
                 )}
               >
-                Cliente (Menú)
+                Cliente
               </button>
               <button
                 type="button"
-                onClick={() => setVista('operacion')}
+                onClick={() => {
+                  setVista('cocina');
+                  setQuery({ mesa, vista: 'cocina' });
+                }}
                 className={classNames(
                   'px-3 py-2 text-xs font-semibold rounded-full',
-                  vista === 'operacion' ? 'bg-blue-600 text-white' : 'text-zinc-700 hover:bg-zinc-50'
+                  vista === 'cocina' ? 'bg-blue-600 text-white' : 'text-zinc-700 hover:bg-zinc-50'
                 )}
               >
-                Operación
+                Cocina
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setVista('mozo');
+                  setQuery({ mesa, vista: 'mozo' });
+                }}
+                className={classNames(
+                  'px-3 py-2 text-xs font-semibold rounded-full',
+                  vista === 'mozo' ? 'bg-blue-600 text-white' : 'text-zinc-700 hover:bg-zinc-50'
+                )}
+              >
+                Mozo
               </button>
             </div>
 
@@ -335,10 +413,15 @@ export default function DemoPage() {
         </div>
       </header>
 
+      {/* Contenido */}
       {vista === 'cliente' ? (
         <ClienteView
           mesa={mesa}
-          setMesa={setMesa}
+          setMesa={(v) => {
+            const nv = normalizeMesa(v);
+            setMesa(nv);
+            setQuery({ mesa: nv });
+          }}
           categorias={categoriasOrdenadas}
           catActiva={catActiva}
           setCatActiva={setCatActiva}
@@ -353,16 +436,34 @@ export default function DemoPage() {
           setNota={setNota}
           crearPedido={crearPedidoDesdeCarrito}
         />
-      ) : (
-        <OperacionView
+      ) : vista === 'cocina' ? (
+        <CocinaView
           pedidos={pedidos}
           productosById={productosById}
-          stats={statsOperacion}
+          stats={statsCocina}
           cambiarEstado={cambiarEstadoPedido}
-          onVolverCliente={() => setVista('cliente')}
+          onIrMozo={() => {
+            setVista('mozo');
+            setQuery({ vista: 'mozo' });
+          }}
+        />
+      ) : (
+        <MozoView
+          pedidos={pedidos}
+          productosById={productosById}
+          mesaEfectivo={mesaEfectivo}
+          mesaPagada={mesaPagada}
+          setMesaEfectivo={(mesaId, v) => setMesaEfectivo((p) => ({ ...p, [mesaId]: v }))}
+          setMesaPagada={(mesaId, v) => setMesaPagada((p) => ({ ...p, [mesaId]: v }))}
+          marcarEntregado={marcarEntregado}
+          onIrCocina={() => {
+            setVista('cocina');
+            setQuery({ vista: 'cocina' });
+          }}
         />
       )}
 
+      {/* Toast */}
       {toast ? (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 rounded-full bg-zinc-900 px-4 py-2 text-sm text-white shadow-lg">
           {toast}
@@ -418,6 +519,7 @@ function ClienteView(props: {
   return (
     <section className="mx-auto max-w-6xl px-5 py-10">
       <div className="grid gap-8 md:grid-cols-[1.2fr_0.8fr]">
+        {/* Menú */}
         <div className="grid gap-4">
           <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -425,8 +527,9 @@ function ClienteView(props: {
                 <div className="text-xs text-zinc-500">Menú (Demo)</div>
                 <h1 className="text-2xl font-bold tracking-tight">Escaneá, elegí y pedí</h1>
                 <p className="mt-1 text-sm text-zinc-700">
-                  Simulación de experiencia del cliente. Mesa:{' '}
-                  <span className="font-semibold text-zinc-900">{mesa}</span>
+                  Mesa:{' '}
+                  <span className="font-semibold text-zinc-900">{mesa}</span>{' '}
+                  <span className="text-xs text-zinc-500">(viene de /demo?mesa=...)</span>
                 </p>
               </div>
 
@@ -467,7 +570,7 @@ function ClienteView(props: {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            {productos.map((p) => (
+            {props.productos.map((p) => (
               <div key={p.id} className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -496,6 +599,7 @@ function ClienteView(props: {
           </div>
         </div>
 
+        {/* Carrito */}
         <aside className="md:sticky md:top-20 h-fit">
           <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
@@ -585,7 +689,7 @@ function ClienteView(props: {
               </button>
 
               <div className="mt-3 text-xs text-zinc-500">
-                Esto crea un pedido ficticio y aparece en la vista “Operación”.
+                Esto crea un pedido ficticio y aparece en Cocina / Mozo.
               </div>
             </div>
           </div>
@@ -595,16 +699,16 @@ function ClienteView(props: {
   );
 }
 
-/* -------------------- OPERACIÓN VIEW -------------------- */
+/* -------------------- COCINA VIEW -------------------- */
 
-function OperacionView(props: {
+function CocinaView(props: {
   pedidos: Pedido[];
   productosById: Record<string, Producto>;
   stats: { pendientes: number; enPrep: number; listos: number };
   cambiarEstado: (id: string, estado: EstadoPedido) => void;
-  onVolverCliente: () => void;
+  onIrMozo: () => void;
 }) {
-  const { pedidos, productosById, stats, cambiarEstado, onVolverCliente } = props;
+  const { pedidos, productosById, stats, cambiarEstado, onIrMozo } = props;
 
   const pedidosOrdenados = useMemo(() => {
     const rank: Record<EstadoPedido, number> = { pendiente: 0, en_preparacion: 1, listo: 2 };
@@ -629,20 +733,18 @@ function OperacionView(props: {
     <section className="mx-auto max-w-6xl px-5 py-10">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <div className="text-xs text-zinc-500">Operación (Demo)</div>
-          <h1 className="text-2xl font-bold tracking-tight">Cocina / Mozo</h1>
-          <p className="mt-1 text-sm text-zinc-700">
-            Simulación del panel operativo: pedidos en tiempo real (ficticio).
-          </p>
+          <div className="text-xs text-zinc-500">Cocina (Demo)</div>
+          <h1 className="text-2xl font-bold tracking-tight">Panel de cocina</h1>
+          <p className="mt-1 text-sm text-zinc-700">Cambiá estados y marcá pedidos como listos.</p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={onVolverCliente}
+            onClick={onIrMozo}
             className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
           >
-            Volver a cliente
+            Ir a Mozo
           </button>
 
           <Link
@@ -661,98 +763,307 @@ function OperacionView(props: {
       </div>
 
       <div className="mt-8 grid gap-4">
-        {pedidosOrdenados.length === 0 ? (
-          <div className="rounded-3xl border border-black/10 bg-zinc-50 p-6 text-sm text-zinc-600">
-            Todavía no hay pedidos (demo).
-          </div>
-        ) : (
-          pedidosOrdenados.map((p) => {
-            const b = badgeEstado(p.estado);
-            return (
-              <div key={p.id} className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="grid gap-1">
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm font-bold">Mesa {p.mesa}</div>
-                      <span
-                        className={classNames('rounded-full border px-3 py-1 text-xs font-semibold', b.cls)}
-                      >
-                        {b.label}
-                      </span>
-                    </div>
-                    <div className="text-xs text-zinc-500">
-                      {new Date(p.creado_en).toLocaleString('es-AR')}
-                    </div>
-                  </div>
-
+        {pedidosOrdenados.map((p) => {
+          const b = badgeEstado(p.estado);
+          return (
+            <div key={p.id} className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="grid gap-1">
                   <div className="flex items-center gap-2">
+                    <div className="text-sm font-bold">Mesa {p.mesa}</div>
+                    <span className={classNames('rounded-full border px-3 py-1 text-xs font-semibold', b.cls)}>
+                      {b.label}
+                    </span>
+                    {p.entregado ? (
+                      <span className="rounded-full border border-black/10 bg-zinc-50 px-3 py-1 text-xs text-zinc-600">
+                        Entregado
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="text-xs text-zinc-500">
+                    {new Date(p.creado_en).toLocaleString('es-AR')}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => props.cambiarEstado(p.id, 'pendiente')}
+                    className={classNames(
+                      'rounded-2xl border px-3 py-2 text-xs font-semibold',
+                      p.estado === 'pendiente'
+                        ? 'border-blue-200 bg-blue-50 text-blue-700'
+                        : 'border-black/10 bg-white text-zinc-700 hover:bg-zinc-50'
+                    )}
+                  >
+                    Pendiente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => props.cambiarEstado(p.id, 'en_preparacion')}
+                    className={classNames(
+                      'rounded-2xl border px-3 py-2 text-xs font-semibold',
+                      p.estado === 'en_preparacion'
+                        ? 'border-blue-200 bg-blue-50 text-blue-700'
+                        : 'border-black/10 bg-white text-zinc-700 hover:bg-zinc-50'
+                    )}
+                  >
+                    En prep.
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => props.cambiarEstado(p.id, 'listo')}
+                    className={classNames(
+                      'rounded-2xl border px-3 py-2 text-xs font-semibold',
+                      p.estado === 'listo'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        : 'border-black/10 bg-white text-zinc-700 hover:bg-zinc-50'
+                    )}
+                  >
+                    Listo
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-3">
+                {p.items.map((it, idx) => {
+                  const prod = productosById[it.productoId];
+                  if (!prod) return null;
+                  return (
+                    <div key={`${p.id}_${idx}`} className="rounded-2xl border border-black/10 bg-zinc-50 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-semibold">
+                            {it.cantidad} × {prod.nombre}
+                          </div>
+                          {it.nota ? <div className="mt-1 text-xs text-zinc-600">Nota: {it.nota}</div> : null}
+                        </div>
+                        <div className="text-sm font-bold">{moneyARS(prod.precio * it.cantidad)}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-5 flex items-center justify-between">
+                <div className="text-xs text-zinc-500">Total del pedido</div>
+                <div className="text-sm font-bold">{moneyARS(totalPedido(p))}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* -------------------- MOZO VIEW -------------------- */
+
+function MozoView(props: {
+  pedidos: Pedido[];
+  productosById: Record<string, Producto>;
+  mesaEfectivo: Record<string, boolean>;
+  mesaPagada: Record<string, boolean>;
+  setMesaEfectivo: (mesa: string, v: boolean) => void;
+  setMesaPagada: (mesa: string, v: boolean) => void;
+  marcarEntregado: (pedidoId: string) => void;
+  onIrCocina: () => void;
+}) {
+  const { pedidos, productosById, mesaEfectivo, mesaPagada, setMesaEfectivo, setMesaPagada, marcarEntregado, onIrCocina } =
+    props;
+
+  // pedidos listos y no entregados
+  const listosParaEntregar = useMemo(() => {
+    return pedidos
+      .filter((p) => p.estado === 'listo' && !p.entregado)
+      .sort((a, b) => b.creado_en.localeCompare(a.creado_en));
+  }, [pedidos]);
+
+  // mesas presentes
+  const mesas = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of pedidos) set.add(String(p.mesa));
+    return Array.from(set).sort((a, b) => Number(a) - Number(b));
+  }, [pedidos]);
+
+  function totalPedido(p: Pedido) {
+    let total = 0;
+    for (const it of p.items) {
+      const prod = productosById[it.productoId];
+      if (prod) total += prod.precio * it.cantidad;
+    }
+    return total;
+  }
+
+  function totalMesa(m: string) {
+    // total acumulado (demo): suma de TODOS los pedidos de la mesa
+    return pedidos.filter((p) => String(p.mesa) === String(m)).reduce((acc, p) => acc + totalPedido(p), 0);
+  }
+
+  function resumenMesa(m: string) {
+    const ps = pedidos.filter((p) => String(p.mesa) === String(m));
+    return {
+      pendientes: ps.filter((p) => p.estado === 'pendiente').length,
+      enPrep: ps.filter((p) => p.estado === 'en_preparacion').length,
+      listosNoEnt: ps.filter((p) => p.estado === 'listo' && !p.entregado).length,
+    };
+  }
+
+  return (
+    <section className="mx-auto max-w-6xl px-5 py-10">
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div className="text-xs text-zinc-500">Mozo (Demo)</div>
+          <h1 className="text-2xl font-bold tracking-tight">Pantalla mozo</h1>
+          <p className="mt-1 text-sm text-zinc-700">Entregas + cuenta por mesa + pago efectivo.</p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onIrCocina}
+            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
+          >
+            Ir a Cocina
+          </button>
+
+          <Link
+            href="/#contacto"
+            className="rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+          >
+            Pedir demo real
+          </Link>
+        </div>
+      </div>
+
+      {/* Listos para entregar */}
+      <div className="mt-8 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold">Listos para entregar</h2>
+          <span className="rounded-full border border-black/10 bg-zinc-50 px-3 py-1 text-xs text-zinc-600">
+            {listosParaEntregar.length} pedidos
+          </span>
+        </div>
+
+        <div className="mt-4 grid gap-3">
+          {listosParaEntregar.length === 0 ? (
+            <div className="rounded-2xl border border-black/10 bg-zinc-50 p-4 text-sm text-zinc-600">
+              No hay pedidos listos sin entregar.
+            </div>
+          ) : (
+            listosParaEntregar.map((p) => (
+              <div key={p.id} className="rounded-2xl border border-black/10 bg-zinc-50 p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="text-sm font-bold">Mesa {p.mesa}</div>
+                    <div className="text-xs text-zinc-500">{new Date(p.creado_en).toLocaleString('es-AR')}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm font-bold">{moneyARS(totalPedido(p))}</div>
                     <button
                       type="button"
-                      onClick={() => cambiarEstado(p.id, 'pendiente')}
-                      className={classNames(
-                        'rounded-2xl border px-3 py-2 text-xs font-semibold',
-                        p.estado === 'pendiente'
-                          ? 'border-blue-200 bg-blue-50 text-blue-700'
-                          : 'border-black/10 bg-white text-zinc-700 hover:bg-zinc-50'
-                      )}
+                      onClick={() => marcarEntregado(p.id)}
+                      className="rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700"
                     >
-                      Pendiente
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => cambiarEstado(p.id, 'en_preparacion')}
-                      className={classNames(
-                        'rounded-2xl border px-3 py-2 text-xs font-semibold',
-                        p.estado === 'en_preparacion'
-                          ? 'border-blue-200 bg-blue-50 text-blue-700'
-                          : 'border-black/10 bg-white text-zinc-700 hover:bg-zinc-50'
-                      )}
-                    >
-                      En prep.
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => cambiarEstado(p.id, 'listo')}
-                      className={classNames(
-                        'rounded-2xl border px-3 py-2 text-xs font-semibold',
-                        p.estado === 'listo'
-                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                          : 'border-black/10 bg-white text-zinc-700 hover:bg-zinc-50'
-                      )}
-                    >
-                      Listo
+                      Marcar entregado
                     </button>
                   </div>
                 </div>
 
-                <div className="mt-5 grid gap-3">
+                <div className="mt-3 grid gap-2">
                   {p.items.map((it, idx) => {
                     const prod = productosById[it.productoId];
                     if (!prod) return null;
                     return (
-                      <div key={`${p.id}_${idx}`} className="rounded-2xl border border-black/10 bg-zinc-50 p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-semibold">
-                              {it.cantidad} × {prod.nombre}
-                            </div>
-                            {it.nota ? <div className="mt-1 text-xs text-zinc-600">Nota: {it.nota}</div> : null}
-                          </div>
-                          <div className="text-sm font-bold">{moneyARS(prod.precio * it.cantidad)}</div>
+                      <div key={`${p.id}_${idx}`} className="flex items-start justify-between gap-3 rounded-xl bg-white p-3 border border-black/10">
+                        <div className="text-sm">
+                          <span className="font-semibold">{it.cantidad}×</span> {prod.nombre}
+                          {it.nota ? <div className="text-xs text-zinc-500">Nota: {it.nota}</div> : null}
                         </div>
+                        <div className="text-sm font-bold">{moneyARS(prod.precio * it.cantidad)}</div>
                       </div>
                     );
                   })}
                 </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
 
-                <div className="mt-5 flex items-center justify-between">
-                  <div className="text-xs text-zinc-500">Total del pedido</div>
-                  <div className="text-sm font-bold">{moneyARS(totalPedido(p))}</div>
+      {/* Cuentas por mesa */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold">Cuentas por mesa</h2>
+          <span className="text-xs text-zinc-500">Demo: total acumulado por mesa</span>
+        </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          {mesas.map((m) => {
+            const tot = totalMesa(m);
+            const r = resumenMesa(m);
+            const efectivo = !!mesaEfectivo[m];
+            const pagada = !!mesaPagada[m];
+
+            return (
+              <div key={m} className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-bold">Mesa {m}</div>
+                  {pagada ? (
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      Pagada
+                    </span>
+                  ) : (
+                    <span className="rounded-full border border-black/10 bg-zinc-50 px-3 py-1 text-xs text-zinc-600">
+                      Abierta
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-3 text-2xl font-bold">{moneyARS(tot)}</div>
+
+                <div className="mt-3 grid gap-1 text-xs text-zinc-600">
+                  <div>Pendientes: <span className="font-semibold text-zinc-900">{r.pendientes}</span></div>
+                  <div>En prep.: <span className="font-semibold text-zinc-900">{r.enPrep}</span></div>
+                  <div>Listos sin entregar: <span className="font-semibold text-zinc-900">{r.listosNoEnt}</span></div>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMesaEfectivo(m, !efectivo)}
+                    className={classNames(
+                      'rounded-2xl border px-4 py-2 text-sm font-semibold',
+                      efectivo
+                        ? 'border-blue-200 bg-blue-50 text-blue-700'
+                        : 'border-black/10 bg-white text-zinc-700 hover:bg-zinc-50'
+                    )}
+                  >
+                    {efectivo ? 'Paga en efectivo ✓' : 'Marcar paga en efectivo'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setMesaPagada(m, !pagada)}
+                    className={classNames(
+                      'rounded-2xl px-4 py-2 text-sm font-semibold text-white',
+                      pagada ? 'bg-zinc-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                    )}
+                    disabled={pagada}
+                  >
+                    Marcar cuenta pagada
+                  </button>
+
+                  {pagada ? (
+                    <div className="text-xs text-zinc-500">
+                      Demo: en el sistema real esto cerraría la cuenta / mesa.
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
-          })
-        )}
+          })}
+        </div>
       </div>
     </section>
   );
