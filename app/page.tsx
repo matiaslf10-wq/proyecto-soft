@@ -570,7 +570,7 @@ export default function RestoSmartLanding() {
                     className="min-h-[120px] rounded-2xl border border-black/10 bg-white p-4 text-sm outline-none focus:border-blue-600"
                     value={form.mensaje}
                     onChange={(e) => setForm((p) => ({ ...p, mensaje: e.target.value }))}
-                    placeholder="Contanos qué necesitás (menú QR, pedidos, panel cocina, dashboard, etc.)"
+                    placeholder="Decinos que plan te interesa mas o contanos qué necesitás "
                     required
                   />
                 </div>
