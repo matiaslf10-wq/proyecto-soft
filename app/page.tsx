@@ -511,9 +511,9 @@ export default function RestoSmartLanding() {
       <section id="contacto" className="border-t border-black/5 bg-zinc-50">
         <div className="mx-auto max-w-6xl px-5 py-14">
           <div className="max-w-2xl">
-            <h2 className="text-2xl md:text-3xl font-bold">Solicitar demo</h2>
+            <h2 className="text-2xl md:text-3xl font-bold">Contactenos</h2>
             <p className="mt-2 text-zinc-700">
-              Contanos tu negocio y coordinamos una demo personalizada por email.
+              Contanos tu negocio y te brindamos el mejor plan para tu negocio.
             </p>
           </div>
 
