@@ -517,83 +517,91 @@ export default function RestoSmartLanding() {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-            <form
-              onSubmit={onSubmit}
-              className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm"
-            >
-              <div className="grid gap-4">
-                <div className="grid gap-1">
-                  <label className="text-sm font-semibold">Nombre</label>
-                  <input
-                    className="h-11 rounded-2xl border border-black/10 bg-white px-4 text-sm outline-none focus:border-blue-600"
-                    value={form.nombre}
-                    onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
-                    required
-                  />
-                </div>
+<div className="mt-10">
+  <form
+    onSubmit={onSubmit}
+    className="w-full rounded-3xl border border-black/10 bg-white p-8 shadow-sm"
+  >
+    <div className="grid gap-6 md:grid-cols-2">
 
-                <div className="grid gap-1">
-                  <label className="text-sm font-semibold">Email</label>
-                  <input
-                    type="email"
-                    className="h-11 rounded-2xl border border-black/10 bg-white px-4 text-sm outline-none focus:border-blue-600"
-                    value={form.email}
-                    onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                    required
-                  />
-                </div>
+      {/* Nombre */}
+      <div className="grid gap-2">
+        <label className="text-sm font-semibold">Nombre</label>
+        <input
+          className="h-12 rounded-2xl border border-black/10 bg-white px-4 text-sm outline-none focus:border-blue-600"
+          value={form.nombre}
+          onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
+          required
+        />
+      </div>
 
-                <div className="grid gap-1">
-                  <label className="text-sm font-semibold">Teléfono (opcional)</label>
-                  <input
-                    className="h-11 rounded-2xl border border-black/10 bg-white px-4 text-sm outline-none focus:border-blue-600"
-                    value={form.telefono}
-                    onChange={(e) => setForm((p) => ({ ...p, telefono: e.target.value }))}
-                    placeholder="Ej: 11 1234-5678"
-                  />
-                </div>
+      {/* Email */}
+      <div className="grid gap-2">
+        <label className="text-sm font-semibold">Email</label>
+        <input
+          type="email"
+          className="h-12 rounded-2xl border border-black/10 bg-white px-4 text-sm outline-none focus:border-blue-600"
+          value={form.email}
+          onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+          required
+        />
+      </div>
 
-                <div className="grid gap-1">
-                  <label className="text-sm font-semibold">Negocio</label>
-                  <input
-                    className="h-11 rounded-2xl border border-black/10 bg-white px-4 text-sm outline-none focus:border-blue-600"
-                    value={form.negocio}
-                    onChange={(e) => setForm((p) => ({ ...p, negocio: e.target.value }))}
-                    placeholder="Restaurante / bar / café / take away"
-                  />
-                </div>
+      {/* Teléfono */}
+      <div className="grid gap-2">
+        <label className="text-sm font-semibold">Teléfono (opcional)</label>
+        <input
+          className="h-12 rounded-2xl border border-black/10 bg-white px-4 text-sm outline-none focus:border-blue-600"
+          value={form.telefono}
+          onChange={(e) => setForm((p) => ({ ...p, telefono: e.target.value }))}
+          placeholder="Ej: 11 1234-5678"
+        />
+      </div>
 
-                <div className="grid gap-1">
-                  <label className="text-sm font-semibold">Mensaje</label>
-                  <textarea
-                    className="min-h-[120px] rounded-2xl border border-black/10 bg-white p-4 text-sm outline-none focus:border-blue-600"
-                    value={form.mensaje}
-                    onChange={(e) => setForm((p) => ({ ...p, mensaje: e.target.value }))}
-                    placeholder="Decinos que plan te interesa mas o contanos qué necesitás "
-                    required
-                  />
-                </div>
+      {/* Negocio */}
+      <div className="grid gap-2">
+        <label className="text-sm font-semibold">Tipo de negocio</label>
+        <input
+          className="h-12 rounded-2xl border border-black/10 bg-white px-4 text-sm outline-none focus:border-blue-600"
+          value={form.negocio}
+          onChange={(e) => setForm((p) => ({ ...p, negocio: e.target.value }))}
+          placeholder="Restaurante / bar / café / take away"
+        />
+      </div>
 
-                <button
-                  type="submit"
-                  className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
-                >
-                  Enviar
-                </button>
+      {/* Mensaje ocupa las dos columnas */}
+      <div className="grid gap-2 md:col-span-2">
+        <label className="text-sm font-semibold">Mensaje</label>
+        <textarea
+          className="min-h-[140px] rounded-2xl border border-black/10 bg-white p-4 text-sm outline-none focus:border-blue-600"
+          value={form.mensaje}
+          onChange={(e) => setForm((p) => ({ ...p, mensaje: e.target.value }))}
+          placeholder="Contanos qué necesitás o qué plan te interesa."
+          required
+        />
+      </div>
 
-                {sent ? (
-                  <div className="text-sm text-zinc-600">
-                    Si no se abrió tu correo, escribinos directo a{' '}
-                    <a className="underline" href="mailto:contacto@restosmart.com">
-                      contacto@restosmart.com
-                    </a>
-                    .
-                  </div>
-                ) : null}
-              </div>
-            </form>
-          </div>
+      {/* Botón ocupa las dos columnas */}
+      <div className="md:col-span-2 flex justify-center">
+        <button
+          type="submit"
+          className="rounded-2xl bg-blue-600 px-8 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+        >
+          Enviar consulta
+        </button>
+      </div>
+
+      {sent && (
+        <div className="md:col-span-2 text-center text-sm text-zinc-600">
+          Si no se abrió tu correo, escribinos a{' '}
+          <a className="underline" href="mailto:contacto@restosmart.com">
+            contacto@restosmart.com
+          </a>
+        </div>
+      )}
+    </div>
+  </form>
+</div>
         </div>
       </section>
 
