@@ -40,7 +40,6 @@ type Pedido = {
 };
 
 function moneyARS(n: number) {
-  // demo: formato simple
   return `$ ${n.toLocaleString('es-AR')}`;
 }
 
@@ -57,7 +56,8 @@ function classNames(...xs: Array<string | false | undefined | null>) {
 }
 
 function badgeEstado(estado: EstadoPedido) {
-  if (estado === 'pendiente') return { label: 'Pendiente', cls: 'bg-zinc-100 text-zinc-700 border-black/10' };
+  if (estado === 'pendiente')
+    return { label: 'Pendiente', cls: 'bg-zinc-100 text-zinc-700 border-black/10' };
   if (estado === 'en_preparacion')
     return { label: 'En preparación', cls: 'bg-blue-50 text-blue-700 border-blue-200' };
   return { label: 'Listo', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
@@ -165,7 +165,6 @@ export default function DemoPage() {
   const [toast, setToast] = useState<string | null>(null);
 
   const [pedidos, setPedidos] = useState<Pedido[]>(() => {
-    // pedidos ficticios iniciales para mostrar operación
     return [
       {
         id: uid('ped'),
@@ -201,7 +200,9 @@ export default function DemoPage() {
     const base = DEMO.productos.filter((p) => p.activo);
     const byCat = base.filter((p) => p.categoria_id === catActiva);
     const bySearch = q.trim()
-      ? byCat.filter((p) => (p.nombre + ' ' + p.descripcion).toLowerCase().includes(q.trim().toLowerCase()))
+      ? byCat.filter((p) =>
+          (p.nombre + ' ' + p.descripcion).toLowerCase().includes(q.trim().toLowerCase())
+        )
       : byCat;
     return bySearch.sort((a, b) => Number(!!b.destacado) - Number(!!a.destacado));
   }, [catActiva, q]);
@@ -254,16 +255,18 @@ export default function DemoPage() {
       mesa: String(mesa || '—'),
       creado_en: nowIso(),
       estado: 'pendiente',
-      items: carrito.map((x) => ({ productoId: x.productoId, cantidad: x.cantidad, nota: x.nota })),
+      items: carrito.map((x) => ({
+        productoId: x.productoId,
+        cantidad: x.cantidad,
+        nota: x.nota,
+      })),
     };
 
-    // Lo agregamos arriba para que se vea “nuevo”
     setPedidos((prev) => [nuevo, ...prev]);
     setCarrito([]);
     setToast('Pedido enviado (demo)');
     setTimeout(() => setToast(null), 1400);
 
-    // Cambiamos automáticamente a operación para que veas el flujo
     setVista('operacion');
   }
 
@@ -280,7 +283,6 @@ export default function DemoPage() {
 
   return (
     <main className="min-h-screen bg-white text-zinc-900">
-      {/* Topbar */}
       <header className="sticky top-0 z-40 border-b border-black/5 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
           <div className="flex items-center gap-3">
@@ -323,17 +325,16 @@ export default function DemoPage() {
               </button>
             </div>
 
-            <a
+            <Link
               href="/#contacto"
               className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
             >
               Pedir demo real
-            </a>
+            </Link>
           </div>
         </div>
       </header>
 
-      {/* Contenido */}
       {vista === 'cliente' ? (
         <ClienteView
           mesa={mesa}
@@ -362,7 +363,6 @@ export default function DemoPage() {
         />
       )}
 
-      {/* Toast */}
       {toast ? (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 rounded-full bg-zinc-900 px-4 py-2 text-sm text-white shadow-lg">
           {toast}
@@ -418,7 +418,6 @@ function ClienteView(props: {
   return (
     <section className="mx-auto max-w-6xl px-5 py-10">
       <div className="grid gap-8 md:grid-cols-[1.2fr_0.8fr]">
-        {/* Columna Menú */}
         <div className="grid gap-4">
           <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -497,7 +496,6 @@ function ClienteView(props: {
           </div>
         </div>
 
-        {/* Columna Carrito */}
         <aside className="md:sticky md:top-20 h-fit">
           <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
@@ -609,7 +607,6 @@ function OperacionView(props: {
   const { pedidos, productosById, stats, cambiarEstado, onVolverCliente } = props;
 
   const pedidosOrdenados = useMemo(() => {
-    // pendientes primero, luego en preparación, luego listos. Dentro por tiempo desc.
     const rank: Record<EstadoPedido, number> = { pendiente: 0, en_preparacion: 1, listo: 2 };
     return [...pedidos].sort((a, b) => {
       const ra = rank[a.estado];
@@ -647,12 +644,13 @@ function OperacionView(props: {
           >
             Volver a cliente
           </button>
-          <a
+
+          <Link
             href="/#contacto"
             className="rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700"
           >
             Pedir demo real
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -676,7 +674,9 @@ function OperacionView(props: {
                   <div className="grid gap-1">
                     <div className="flex items-center gap-2">
                       <div className="text-sm font-bold">Mesa {p.mesa}</div>
-                      <span className={classNames('rounded-full border px-3 py-1 text-xs font-semibold', b.cls)}>
+                      <span
+                        className={classNames('rounded-full border px-3 py-1 text-xs font-semibold', b.cls)}
+                      >
                         {b.label}
                       </span>
                     </div>
